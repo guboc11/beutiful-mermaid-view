@@ -1,9 +1,61 @@
 import { useState, useRef, useEffect } from 'react'
-import { renderMermaidSVG } from 'beautiful-mermaid'
+import { renderMermaidSVG, THEMES } from 'beautiful-mermaid'
 import { select } from 'd3-selection'
 import { zoom, zoomIdentity, type ZoomBehavior } from 'd3-zoom'
+import CodeMirror, { EditorView, oneDark, ViewPlugin, Decoration, RangeSetBuilder, type DecorationSet } from '@uiw/react-codemirror'
+import { mermaid } from 'codemirror-lang-mermaid'
 import defaultCode from './example.mmd?raw'
 import './App.css'
+
+const { bg } = THEMES['dracula']
+const bgOverride = EditorView.theme({
+  '&': { backgroundColor: bg },
+  '.cm-gutters': { backgroundColor: bg },
+})
+
+type HighlightRange = { from: number; to: number; cls: string }
+
+const classDiagramHighlight = ViewPlugin.fromClass(
+  class {
+    decorations: DecorationSet
+    constructor(view: EditorView) { this.decorations = this.build(view) }
+    update(update: { docChanged: boolean; viewportChanged: boolean; view: EditorView }) {
+      if (update.docChanged || update.viewportChanged) this.decorations = this.build(update.view)
+    }
+    build(view: EditorView): DecorationSet {
+      const builder = new RangeSetBuilder<ReturnType<typeof Decoration.mark>>()
+      const text = view.state.doc.toString()
+      if (!/^\s*classDiagram/i.test(text)) return builder.finish()
+
+      const ranges: HighlightRange[] = []
+      const add = (regex: RegExp, cls: string) => {
+        let m: RegExpExecArray | null
+        regex.lastIndex = 0
+        while ((m = regex.exec(text)) !== null) {
+          ranges.push({ from: m.index, to: m.index + m[0].length, cls })
+        }
+      }
+
+      add(/%%[^\n]*/g, 'cm-cd-comment')
+      add(/\b(classDiagram|class|interface|abstract|namespace)\b/g, 'cm-cd-keyword')
+      add(/<<[^>]+>>/g, 'cm-cd-stereotype')
+      add(/(--|\.\.)[>|*o]/g, 'cm-cd-relation')
+      add(/(?<![a-zA-Z])[+\-#~](?=[a-zA-Z_])/g, 'cm-cd-visibility')
+
+      ranges.sort((a, b) => a.from !== b.from ? a.from - b.from : b.to - a.to)
+
+      let lastTo = 0
+      for (const { from, to, cls } of ranges) {
+        if (from >= lastTo) {
+          builder.add(from, to, Decoration.mark({ class: cls }))
+          lastTo = to
+        }
+      }
+      return builder.finish()
+    }
+  },
+  { decorations: (v) => v.decorations }
+)
 
 export default function App() {
   const [code, setCode] = useState(defaultCode)
@@ -18,7 +70,7 @@ export default function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       try {
-        setSvg(renderMermaidSVG(code))
+        setSvg(renderMermaidSVG(code, THEMES['dracula']))
         setError('')
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Parse error')
@@ -140,10 +192,13 @@ export default function App() {
       </nav>
       <div className="main">
         <div className="editor">
-          <textarea
+          <CodeMirror
             value={code}
-            onChange={e => setCode(e.target.value)}
-            spellCheck={false}
+            onChange={setCode}
+            theme={oneDark}
+            extensions={[mermaid(), classDiagramHighlight, bgOverride]}
+            height="100%"
+            style={{ flex: 1, overflow: 'hidden' }}
           />
           {error && <div className="error">{error}</div>}
         </div>

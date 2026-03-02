@@ -42,21 +42,8 @@
   width: 380px;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #e4e4e7;
+  border-right: 1px solid #44475a;
   flex-shrink: 0;
-}
-
-.editor textarea {
-  flex: 1;
-  padding: 16px;
-  font-family: 'Menlo', 'Monaco', monospace;
-  font-size: 13px;
-  line-height: 1.6;
-  border: none;
-  outline: none;
-  resize: none;
-  background: #fafafa;
-  color: #18181b;
 }
 
 .error {
@@ -73,7 +60,7 @@
   position: relative;
   overflow: hidden;
   cursor: grab;
-  background: #ffffff;
+  background: #282a36;
   user-select: none;
 }
 
@@ -155,3 +142,11 @@
   stroke-dasharray: 8 4;
   animation: flow 0.4s linear infinite;
 }
+
+/* === classDiagram syntax highlighting === */
+
+.cm-cd-comment { color: #6272a4 !important; font-style: italic; }
+.cm-cd-keyword { color: #ff79c6 !important; font-weight: 600; }
+.cm-cd-stereotype { color: #50fa7b !important; }
+.cm-cd-relation { color: #ffb86c !important; }
+.cm-cd-visibility { color: #8be9fd !important; }
