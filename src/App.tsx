@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string'
 import { renderMermaidSVG, THEMES } from 'beautiful-mermaid'
 import { select } from 'd3-selection'
 import { zoom, zoomIdentity, type ZoomBehavior } from 'd3-zoom'
@@ -70,8 +71,17 @@ function buildPreviewCode(nodeId: string, outgoing: EdgeInfo[], incoming: EdgeIn
   return lines.join('\n')
 }
 
+function loadInitialCode(): string {
+  const hash = window.location.hash.slice(1)
+  if (hash) {
+    const decoded = decompressFromEncodedURIComponent(hash)
+    if (decoded) return decoded
+  }
+  return defaultCode
+}
+
 export default function App() {
-  const [code, setCode] = useState(defaultCode)
+  const [code, setCode] = useState(loadInitialCode)
   const [svg, setSvg] = useState('')
   const [error, setError] = useState('')
 
@@ -81,6 +91,11 @@ export default function App() {
   const previewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const zoomRef = useRef<ZoomBehavior<HTMLDivElement, unknown> | null>(null)
   const isCenteredRef = useRef(false)
+
+  const handleCodeChange = (value: string) => {
+    setCode(value)
+    window.location.hash = compressToEncodedURIComponent(value)
+  }
 
   const fitToScreen = () => {
     const el = viewerRef.current
@@ -92,6 +107,13 @@ export default function App() {
     const y = (el.clientHeight - wrap.offsetHeight * scale) / 2
     select(el).call(zoomBehavior.transform, zoomIdentity.translate(x, y).scale(scale))
   }
+
+  // Set initial hash if not present
+  useEffect(() => {
+    if (!window.location.hash) {
+      window.location.hash = compressToEncodedURIComponent(code)
+    }
+  }, [])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -290,7 +312,7 @@ export default function App() {
         <div className="editor">
           <CodeMirror
             value={code}
-            onChange={setCode}
+            onChange={handleCodeChange}
             theme={oneDark}
             extensions={[mermaid(), classDiagramHighlight, bgOverride]}
             height="100%"
