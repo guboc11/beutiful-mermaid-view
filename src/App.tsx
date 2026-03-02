@@ -136,6 +136,7 @@ export default function App() {
     <div className="app">
       <nav className="navbar">
         <span>beautiful-mermaid-view</span>
+        <span className="navbar-license">Powered by <a href="https://github.com/lukilabs/beautiful-mermaid" target="_blank" rel="noreferrer">beautiful-mermaid</a> — MIT License © 2026 Craft Docs</span>
       </nav>
       <div className="main">
         <div className="editor">
