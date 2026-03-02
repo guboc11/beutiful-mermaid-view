@@ -249,8 +249,15 @@ export default function App() {
           for (const { id } of capturedIn) svgContainer.querySelector(`g.node[data-id="${esc(id)}"]`)?.classList.add('node-in')
           for (const { id } of capturedOut) svgContainer.querySelector(`g.node[data-id="${esc(id)}"]`)?.classList.add('node-out')
           svgContainer.querySelectorAll('polyline.edge').forEach(edge => {
-            if (edge.getAttribute('data-from') === capturedId) edge.classList.add('edge-out')
-            else if (edge.getAttribute('data-to') === capturedId) edge.classList.add('edge-in')
+            const from = edge.getAttribute('data-from')
+            const to = edge.getAttribute('data-to')
+            if (from === capturedId) {
+              edge.classList.add('edge-out')
+              svgContainer.querySelector(`g.edge-label[data-from="${esc(from)}"][data-to="${esc(to ?? '')}"]`)?.classList.add('label-out')
+            } else if (to === capturedId) {
+              edge.classList.add('edge-in')
+              svgContainer.querySelector(`g.edge-label[data-from="${esc(from ?? '')}"][data-to="${esc(to)}"]`)?.classList.add('label-in')
+            }
           })
         } catch (e) { console.error('[preview] error:', e); svgContainer.innerHTML = '' }
       }, 0)

@@ -256,6 +256,14 @@
   animation: flow 0.4s linear infinite;
 }
 
+.hover-panel-svg g.edge-label.label-out text {
+  fill: #ef4444;
+}
+
+.hover-panel-svg g.edge-label.label-in text {
+  fill: #3b82f6;
+}
+
 .hover-panel-svg polyline.edge-in {
   stroke: #3b82f6;
   stroke-width: 2;
