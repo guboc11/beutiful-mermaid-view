@@ -139,6 +139,24 @@ export default function App() {
     })
   }, [svg])
 
+  // Mark root nodes (no incoming edges)
+  useEffect(() => {
+    const wrap = svgWrapRef.current
+    if (!wrap || !svg) return
+    requestAnimationFrame(() => {
+      const toIds = new Set<string>()
+      wrap.querySelectorAll('polyline.edge[data-to], polyline.class-relationship[data-to]').forEach(el => {
+        const id = el.getAttribute('data-to')
+        if (id) toIds.add(id)
+      })
+      wrap.querySelectorAll('g.node[data-id], g.class-node[data-id]').forEach(el => {
+        const id = el.getAttribute('data-id')
+        if (id && !toIds.has(id)) el.classList.add('node-root')
+        else el.classList.remove('node-root')
+      })
+    })
+  }, [svg])
+
   // Hover interaction
   useEffect(() => {
     const wrap = svgWrapRef.current

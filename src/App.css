@@ -128,6 +128,19 @@
   opacity: 0.08;
 }
 
+/* Root node (no incoming edges) */
+.svg-wrap g.node.node-root rect,
+.svg-wrap g.node.node-root circle,
+.svg-wrap g.node.node-root polygon,
+.svg-wrap g.node.node-root ellipse,
+.svg-wrap g.class-node.node-root rect,
+.svg-wrap g.class-node.node-root circle,
+.svg-wrap g.class-node.node-root polygon,
+.svg-wrap g.class-node.node-root ellipse {
+  stroke: #f59e0b;
+  stroke-width: 2;
+}
+
 /* Hovered node */
 .svg-wrap g.node.node-active rect,
 .svg-wrap g.node.node-active circle,
