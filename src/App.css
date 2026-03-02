@@ -67,8 +67,75 @@
 
 .svg-wrap {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform-origin: center center;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
   pointer-events: none;
+}
+
+/* Nodes are interactive */
+.svg-wrap g.node,
+.svg-wrap g.class-node {
+  pointer-events: all;
+  cursor: pointer;
+}
+
+/* Smooth transitions */
+.svg-wrap g.node,
+.svg-wrap g.class-node,
+.svg-wrap polyline.edge,
+.svg-wrap polyline.class-relationship,
+.svg-wrap g.edge-label {
+  transition: opacity 0.15s ease;
+}
+
+/* === Hover highlight system === */
+
+.svg-wrap g.node.dimmed,
+.svg-wrap g.class-node.dimmed {
+  opacity: 0.12;
+}
+
+.svg-wrap polyline.edge.dimmed,
+.svg-wrap polyline.class-relationship.dimmed {
+  opacity: 0.08;
+}
+
+.svg-wrap g.edge-label.dimmed {
+  opacity: 0.08;
+}
+
+/* Hovered node */
+.svg-wrap g.node.node-active rect,
+.svg-wrap g.node.node-active circle,
+.svg-wrap g.node.node-active polygon,
+.svg-wrap g.node.node-active ellipse,
+.svg-wrap g.class-node.node-active rect,
+.svg-wrap g.class-node.node-active circle,
+.svg-wrap g.class-node.node-active polygon,
+.svg-wrap g.class-node.node-active ellipse {
+  stroke: #6366f1;
+  stroke-width: 2.5;
+}
+
+/* Flow animation */
+@keyframes flow {
+  from { stroke-dashoffset: 12; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* Outgoing edges → red */
+.svg-wrap polyline.edge-out {
+  stroke: #ef4444;
+  stroke-width: 2;
+  stroke-dasharray: 8 4;
+  animation: flow 0.4s linear infinite;
+}
+
+/* Incoming edges → blue */
+.svg-wrap polyline.edge-in {
+  stroke: #3b82f6;
+  stroke-width: 2;
+  stroke-dasharray: 8 4;
+  animation: flow 0.4s linear infinite;
 }
