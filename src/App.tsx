@@ -57,61 +57,23 @@ const classDiagramHighlight = ViewPlugin.fromClass(
   { decorations: (v) => v.decorations }
 )
 
-function escRe(s: string) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') }
+type EdgeInfo = { id: string; label: string }
 
-function extractSubgraph(code: string, nodeId: string, outgoing: string[], incoming: string[]): string {
-  const lines = code.split('\n')
-  const header = lines[0].trim()
-  const diagramType = header.split(/\s+/)[0].toLowerCase()
-  const relevant = new Set([nodeId, ...outgoing, ...incoming])
-
-  if (diagramType === 'classdiagram') {
-    const result: string[] = ['classDiagram']
-    let i = 1
-    while (i < lines.length) {
-      const trimmed = lines[i].trim()
-      const cm = trimmed.match(/^class\s+(\w+)/)
-      if (cm) {
-        if (relevant.has(cm[1])) {
-          result.push(lines[i])
-          if (trimmed.includes('{')) {
-            i++
-            while (i < lines.length && !lines[i].trim().startsWith('}')) { result.push(lines[i]); i++ }
-            if (i < lines.length) { result.push(lines[i]); i++ }
-          } else { i++ }
-        } else {
-          if (trimmed.includes('{')) {
-            i++
-            while (i < lines.length && !lines[i].trim().startsWith('}')) i++
-            if (i < lines.length) i++
-          } else { i++ }
-        }
-        continue
-      }
-      const rm = trimmed.match(/^(\w+)\s+[\-<>.]+.*[\-<>.]+\s+(\w+)/)
-      if (rm && (rm[1] === nodeId || rm[2] === nodeId)) result.push(lines[i])
-      i++
-    }
-    return result.join('\n')
+function buildPreviewCode(nodeId: string, outgoing: EdgeInfo[], incoming: EdgeInfo[]): string {
+  const arrow = (label: string) => label ? `-->|${label}|` : '-->'
+  const lines = ['flowchart LR']
+  if (incoming.length === 0 && outgoing.length === 0) {
+    lines.push(`  ${nodeId}`)
   }
-
-  const result: string[] = [header]
-  const nodeRe = new RegExp(`\\b${escRe(nodeId)}\\b`)
-  for (let i = 1; i < lines.length; i++) {
-    const trimmed = lines[i].trim()
-    if (!trimmed || trimmed.startsWith('%%')) continue
-    if (nodeRe.test(trimmed)) result.push(lines[i])
-  }
-  return result.join('\n')
+  for (const { id, label } of incoming) lines.push(`  ${id} ${arrow(label)} ${nodeId}`)
+  for (const { id, label } of outgoing) lines.push(`  ${nodeId} ${arrow(label)} ${id}`)
+  return lines.join('\n')
 }
 
 export default function App() {
   const [code, setCode] = useState(defaultCode)
   const [svg, setSvg] = useState('')
   const [error, setError] = useState('')
-
-  const codeRef = useRef(code)
-  useEffect(() => { codeRef.current = code }, [code])
 
   const viewerRef = useRef<HTMLDivElement>(null)
   const svgWrapRef = useRef<HTMLDivElement>(null)
@@ -180,7 +142,6 @@ export default function App() {
     const edgeInQuery = (id: string) => `polyline.edge[data-to="${esc(id)}"], polyline.class-relationship[data-to="${esc(id)}"]`
 
     const panel = previewPanelRef.current
-    const titleEl = panel?.querySelector<HTMLElement>('.hover-panel-title')
     const svgContainer = panel?.querySelector<HTMLElement>('.hover-panel-svg')
 
     const hidePanel = () => {
@@ -217,8 +178,8 @@ export default function App() {
       nodeEl.classList.remove('dimmed')
       nodeEl.classList.add('node-active')
 
-      const outgoing: string[] = []
-      const incoming: string[] = []
+      const outgoing: EdgeInfo[] = []
+      const incoming: EdgeInfo[] = []
 
       // Outgoing edges → red
       wrap.querySelectorAll(edgeOutQuery(nodeId)).forEach(edge => {
@@ -227,8 +188,10 @@ export default function App() {
         const toId = edge.getAttribute('data-to')
         if (!toId) return
         wrap.querySelectorAll(nodeQuery(toId)).forEach(n => { n.classList.remove('dimmed'); n.classList.add('node-out') })
-        wrap.querySelector(`g.edge-label[data-from="${esc(nodeId)}"][data-to="${esc(toId)}"]`)?.classList.remove('dimmed')
-        if (!outgoing.includes(toId)) outgoing.push(toId)
+        const labelEl = wrap.querySelector(`g.edge-label[data-from="${esc(nodeId)}"][data-to="${esc(toId)}"]`)
+        labelEl?.classList.remove('dimmed')
+        const label = edge.getAttribute('data-label') ?? labelEl?.textContent?.trim() ?? ''
+        if (!outgoing.find(e => e.id === toId)) outgoing.push({ id: toId, label })
       })
 
       // Incoming edges → blue
@@ -238,24 +201,29 @@ export default function App() {
         const fromId = edge.getAttribute('data-from')
         if (!fromId) return
         wrap.querySelectorAll(nodeQuery(fromId)).forEach(n => { n.classList.remove('dimmed'); n.classList.add('node-in') })
-        wrap.querySelector(`g.edge-label[data-from="${esc(fromId)}"][data-to="${esc(nodeId)}"]`)?.classList.remove('dimmed')
-        if (!incoming.includes(fromId)) incoming.push(fromId)
+        const labelEl = wrap.querySelector(`g.edge-label[data-from="${esc(fromId)}"][data-to="${esc(nodeId)}"]`)
+        labelEl?.classList.remove('dimmed')
+        const label = edge.getAttribute('data-label') ?? labelEl?.textContent?.trim() ?? ''
+        if (!incoming.find(e => e.id === fromId)) incoming.push({ id: fromId, label })
       })
 
-      // Show title immediately, defer SVG render to after paint
-      if (titleEl) titleEl.textContent = nodeId
       if (panel) panel.style.display = 'block'
-
-      const capturedCode = codeRef.current
+      const capturedId = nodeId
       const capturedOut = [...outgoing]
       const capturedIn = [...incoming]
 
       previewTimerRef.current = setTimeout(() => {
         if (!svgContainer) return
         try {
-          const subCode = extractSubgraph(capturedCode, nodeId, capturedOut, capturedIn)
-          svgContainer.innerHTML = renderMermaidSVG(subCode, THEMES['dracula'])
-        } catch { svgContainer.innerHTML = '' }
+          svgContainer.innerHTML = renderMermaidSVG(buildPreviewCode(capturedId, capturedOut, capturedIn), THEMES['dracula'])
+          svgContainer.querySelector(`g.node[data-id="${esc(capturedId)}"]`)?.classList.add('node-active')
+          for (const { id } of capturedIn) svgContainer.querySelector(`g.node[data-id="${esc(id)}"]`)?.classList.add('node-in')
+          for (const { id } of capturedOut) svgContainer.querySelector(`g.node[data-id="${esc(id)}"]`)?.classList.add('node-out')
+          svgContainer.querySelectorAll('polyline.edge').forEach(edge => {
+            if (edge.getAttribute('data-from') === capturedId) edge.classList.add('edge-out')
+            else if (edge.getAttribute('data-to') === capturedId) edge.classList.add('edge-in')
+          })
+        } catch (e) { console.error('[preview] error:', e); svgContainer.innerHTML = '' }
       }, 0)
     }
 
@@ -298,7 +266,6 @@ export default function App() {
             dangerouslySetInnerHTML={{ __html: svg }}
           />
           <div className="hover-panel" ref={previewPanelRef} style={{ display: 'none' }}>
-            <div className="hover-panel-title" />
             <div className="hover-panel-svg" />
           </div>
         </div>

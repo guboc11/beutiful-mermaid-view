@@ -1,0 +1,28 @@
+flowchart TD
+    User([User]) --> Auth
+    Auth{Auth Check} -->|valid| Gateway
+    Auth -->|invalid| Login[Login Page]
+    Login --> Auth
+
+    Gateway[API Gateway] --> RateLimit
+    RateLimit{Rate Limit} -->|ok| Router
+    RateLimit -->|exceeded| ErrorHandler
+
+    Router[Router] --> ServiceA[Order Service]
+    Router --> ServiceB[Product Service]
+    Router --> ServiceC[User Service]
+
+    ServiceA --> Queue[(Message Queue)]
+    ServiceA --> DB1[(Orders DB)]
+    ServiceB --> Cache[(Redis Cache)]
+    ServiceB --> DB2[(Products DB)]
+    ServiceC --> DB3[(Users DB)]
+
+    Queue --> Worker[Background Worker]
+    Worker --> Notifier[Notification Service]
+    Notifier --> Email[[Email]]
+    Notifier --> Push[[Push]]
+
+    Cache -->|miss| DB2
+    ErrorHandler --> Logger[Logger]
+    Worker --> Logger

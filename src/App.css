@@ -179,29 +179,55 @@
   border: 1px solid #44475a;
   border-radius: 8px;
   padding: 10px 12px;
-  max-width: 300px;
+  max-width: 800px;
+  max-height: calc(100% - 32px);
+  overflow: hidden;
   pointer-events: none;
   z-index: 10;
-  font-family: system-ui, -apple-system, sans-serif;
-}
-
-.hover-panel-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: #6272a4;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 8px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .hover-panel-svg svg {
   width: 100% !important;
   height: auto !important;
   display: block;
-  max-height: 220px;
+}
+
+.hover-panel-svg g.node.node-active rect,
+.hover-panel-svg g.node.node-active circle,
+.hover-panel-svg g.node.node-active polygon,
+.hover-panel-svg g.node.node-active ellipse {
+  stroke: #6366f1;
+  stroke-width: 2.5;
+}
+
+.hover-panel-svg g.node.node-out rect,
+.hover-panel-svg g.node.node-out circle,
+.hover-panel-svg g.node.node-out polygon,
+.hover-panel-svg g.node.node-out ellipse {
+  stroke: #ef4444;
+  stroke-width: 2;
+}
+
+.hover-panel-svg g.node.node-in rect,
+.hover-panel-svg g.node.node-in circle,
+.hover-panel-svg g.node.node-in polygon,
+.hover-panel-svg g.node.node-in ellipse {
+  stroke: #3b82f6;
+  stroke-width: 2;
+}
+
+.hover-panel-svg polyline.edge-out {
+  stroke: #ef4444;
+  stroke-width: 2;
+  stroke-dasharray: 8 4;
+  animation: flow 0.4s linear infinite;
+}
+
+.hover-panel-svg polyline.edge-in {
+  stroke: #3b82f6;
+  stroke-width: 2;
+  stroke-dasharray: 8 4;
+  animation: flow 0.4s linear infinite;
 }
 
 /* === classDiagram syntax highlighting === */
