@@ -1,0 +1,74 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.navbar {
+  height: 48px;
+  background: #18181b;
+  color: #f4f4f5;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  font-size: 15px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.editor {
+  width: 380px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e4e4e7;
+  flex-shrink: 0;
+}
+
+.editor textarea {
+  flex: 1;
+  padding: 16px;
+  font-family: 'Menlo', 'Monaco', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  border: none;
+  outline: none;
+  resize: none;
+  background: #fafafa;
+  color: #18181b;
+}
+
+.error {
+  padding: 10px 16px;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 12px;
+  font-family: monospace;
+  border-top: 1px solid #fecaca;
+}
+
+.viewer {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  cursor: grab;
+  background: #ffffff;
+  user-select: none;
+}
+
+.viewer:active {
+  cursor: grabbing;
+}
+
+.svg-wrap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center center;
+  pointer-events: none;
+}
