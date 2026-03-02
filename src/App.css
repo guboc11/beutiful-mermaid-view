@@ -121,6 +121,32 @@
   stroke-width: 2.5;
 }
 
+/* Outgoing connected nodes → red border */
+.svg-wrap g.node.node-out rect,
+.svg-wrap g.node.node-out circle,
+.svg-wrap g.node.node-out polygon,
+.svg-wrap g.node.node-out ellipse,
+.svg-wrap g.class-node.node-out rect,
+.svg-wrap g.class-node.node-out circle,
+.svg-wrap g.class-node.node-out polygon,
+.svg-wrap g.class-node.node-out ellipse {
+  stroke: #ef4444;
+  stroke-width: 2;
+}
+
+/* Incoming connected nodes → blue border */
+.svg-wrap g.node.node-in rect,
+.svg-wrap g.node.node-in circle,
+.svg-wrap g.node.node-in polygon,
+.svg-wrap g.node.node-in ellipse,
+.svg-wrap g.class-node.node-in rect,
+.svg-wrap g.class-node.node-in circle,
+.svg-wrap g.class-node.node-in polygon,
+.svg-wrap g.class-node.node-in ellipse {
+  stroke: #3b82f6;
+  stroke-width: 2;
+}
+
 /* Flow animation */
 @keyframes flow {
   from { stroke-dashoffset: 12; }
@@ -141,6 +167,41 @@
   stroke-width: 2;
   stroke-dasharray: 8 4;
   animation: flow 0.4s linear infinite;
+}
+
+/* === Hover preview panel === */
+
+.hover-panel {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: #1e1f29;
+  border: 1px solid #44475a;
+  border-radius: 8px;
+  padding: 10px 12px;
+  max-width: 300px;
+  pointer-events: none;
+  z-index: 10;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.hover-panel-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6272a4;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hover-panel-svg svg {
+  width: 100% !important;
+  height: auto !important;
+  display: block;
+  max-height: 220px;
 }
 
 /* === classDiagram syntax highlighting === */
