@@ -82,6 +82,17 @@ export default function App() {
   const zoomRef = useRef<ZoomBehavior<HTMLDivElement, unknown> | null>(null)
   const isCenteredRef = useRef(false)
 
+  const fitToScreen = () => {
+    const el = viewerRef.current
+    const wrap = svgWrapRef.current
+    const zoomBehavior = zoomRef.current
+    if (!el || !wrap || !zoomBehavior) return
+    const scale = Math.min(el.clientWidth / wrap.offsetWidth, el.clientHeight / wrap.offsetHeight) * 0.9
+    const x = (el.clientWidth - wrap.offsetWidth * scale) / 2
+    const y = (el.clientHeight - wrap.offsetHeight * scale) / 2
+    select(el).call(zoomBehavior.transform, zoomIdentity.translate(x, y).scale(scale))
+  }
+
   useEffect(() => {
     const timer = setTimeout(() => {
       try {
@@ -245,7 +256,10 @@ export default function App() {
     <div className="app">
       <nav className="navbar">
         <span>beautiful-mermaid-view</span>
-        <span className="navbar-license">Powered by <a href="https://github.com/lukilabs/beautiful-mermaid" target="_blank" rel="noreferrer">beautiful-mermaid</a> — MIT License © 2026 Craft Docs</span>
+        <div className="navbar-actions">
+          <button className="navbar-btn" onClick={fitToScreen}>Fit to screen</button>
+          <span className="navbar-license">Powered by <a href="https://github.com/lukilabs/beautiful-mermaid" target="_blank" rel="noreferrer">beautiful-mermaid</a> — MIT License © 2026 Craft Docs</span>
+        </div>
       </nav>
       <div className="main">
         <div className="editor">
